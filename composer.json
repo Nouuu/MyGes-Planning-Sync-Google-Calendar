@@ -1,0 +1,18 @@
+{
+  "name": "vendor_name/myges-planning",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Unknow",
+      "email": "email@example.com"
+    }
+  ],
+  "require": {
+    "tchenu/myges": "dev-master",
+    "google/apiclient": "^2.7",
+    "ext-json": "*",
+    "ext-ctype": "*"
+  }
+}

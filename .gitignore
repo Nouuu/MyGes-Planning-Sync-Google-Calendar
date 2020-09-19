@@ -1,0 +1,10 @@
+
+vendor/
+
+composer.lock
+
+env.php
+
+token.json
+
+credentials.json

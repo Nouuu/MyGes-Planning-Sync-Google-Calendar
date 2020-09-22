@@ -22,7 +22,7 @@ Version php utilisé : 7.4
     * `calendar_id`[ Id du calendrier google](#calendrier-google) (ex: vf2kq9ary690m8iee8ahv3e3d0@group.calendar.google.com)
 
 ## Lancement
-Une fois le fichier `env.php` rempli, lancez (avec linux ou phpstorm de préférence) la commande : `php index.php`.
+Une fois le fichier `env.php` rempli, lancez (avec linux ou phpstorm de préférence, **evitez git bash !**) la commande : `php index.php`.
 
 Le programme vous demandera le nombre de jours à synchroniser à partir d'aujourd'hui. 
 

@@ -63,9 +63,10 @@ function showAgenda(array $agenda)
         $end->add(date_interval_create_from_date_string("2 hours"));
         echo ", Fin : " . $end->format("d-m-Y à H:i");
 
-        $room = Room::fromObject($course->rooms[0]);
-        echo ", Salle : " . $room->campus . " - " . $room->name;
-
+        if (!empty($room)) {
+            $room = Room::fromObject($course->rooms[0]);
+            echo ", Salle : " . $room->campus . " - " . $room->name;
+        }
         echo ", Intervenant : " . $course->teacher;
 
         printf(PHP_EOL);
@@ -89,8 +90,10 @@ function getCourseResume(Course $course): string
     $end->add(date_interval_create_from_date_string("2 hours"));
     $str .= ", Fin : " . $end->format("d-m-Y à H:i");
 
-    $room = Room::fromObject($course->rooms[0]);
-    $str .= ", Salle : " . $room->campus . " - " . $room->name;
+    if (!empty($room)) {
+        $room = Room::fromObject($course->rooms[0]);
+        $str .= ", Salle : " . $room->campus . " - " . $room->name;
+    }
 
     $str .= ", Intervenant : " . $course->teacher;
 
@@ -208,8 +211,11 @@ function addEvents(Google_Client $client, array $agenda)
         //TODO set location and color
 //        $event->setLocation()
 
-        $room = Room::fromObject($course->rooms[0]);
-        $description = "<span>Salle : " . $room->campus . " - " . $room->name . "</span><br>";
+        $description = "";
+        if (!empty($room)) {
+            $room = Room::fromObject($course->rooms[0]);
+            $description .= "<span>Salle : " . $room->campus . " - " . $room->name . "</span><br>";
+        }
         $description .= "<span>Intervenant : " . $course->teacher . "</span>";
         $event->setDescription($description);
 
@@ -227,6 +233,6 @@ function addEvents(Google_Client $client, array $agenda)
 
 function printDivider()
 {
-    print "-------------------------------------------------------------------------------------------------------------".
-    "--------------------------------------------------------------------------------" . PHP_EOL;
+    print "-------------------------------------------------------------------------------------------------------------" .
+        "--------------------------------------------------------------------------------" . PHP_EOL;
 }

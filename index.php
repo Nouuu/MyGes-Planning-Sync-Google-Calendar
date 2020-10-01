@@ -23,10 +23,14 @@ printf("Récupération des cours sur %d jours..." . PHP_EOL, $days);
 $agenda = getAgenda($days, $me);
 printf("Réussi ! %d cours trouvés" . PHP_EOL, sizeof($agenda));
 
+print "Traitement des doublons..." . PHP_EOL;
+$agenda = removeDuplicate($agenda);
+printf("Réussi : %d cours uniques" . PHP_EOL, sizeof($agenda));
+
 printDivider();
 print "Connexion à l'API google..." . PHP_EOL;
 $client = getCalendarClient();
-print "Réussi !" . PHP_EOL;
+print "Connecté !" . PHP_EOL;
 
 printDivider();
 printf("Récupération de la liste des cours présent sur le calendrier google sur %d jours..." . PHP_EOL, $days);

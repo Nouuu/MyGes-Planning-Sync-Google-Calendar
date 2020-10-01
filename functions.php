@@ -42,6 +42,20 @@ function getDateEnd(int $days): DateTime
     return $end;
 }
 
+function removeDuplicate(array $agenda): array
+{
+    $new_agenda = [];
+    $previous = null;
+    foreach ($agenda as $course) {
+        if ($course->reservation_id === $previous) {
+            continue;
+        }
+        $previous = $course->reservation_id;
+        $new_agenda[] = $course;
+    }
+    return $new_agenda;
+}
+
 function showAgenda(array $agenda)
 {
     foreach ($agenda as $course) {
@@ -63,10 +77,16 @@ function showAgenda(array $agenda)
         $end->add(date_interval_create_from_date_string("2 hours"));
         echo ", Fin : " . $end->format("d-m-Y à H:i");
 
-        if (!empty($room)) {
-            $room = Room::fromObject($course->rooms[0]);
-            echo ", Salle : " . $room->campus . " - " . $room->name;
+        if (!empty($course->rooms)) {
+            echo ", Salle(s) : ";
+
+            $room_str = "";
+            foreach ($course->rooms as $room) {
+                $room_str .= ", " . $room->campus . " - " . $room->name;
+            }
+            echo trim($room_str, ", ");
         }
+
         echo ", Intervenant : " . $course->teacher;
 
         printf(PHP_EOL);
@@ -90,9 +110,14 @@ function getCourseResume(Course $course): string
     $end->add(date_interval_create_from_date_string("2 hours"));
     $str .= ", Fin : " . $end->format("d-m-Y à H:i");
 
-    if (!empty($room)) {
-        $room = Room::fromObject($course->rooms[0]);
-        $str .= ", Salle : " . $room->campus . " - " . $room->name;
+    if (!empty($course->rooms)) {
+        $str .= ", Salle(s) : ";
+
+        $room_str = "";
+        foreach ($course->rooms as $room) {
+            $room_str .= ", " . $room->campus . " - " . $room->name;
+        }
+        $str .= trim($room_str, ", ");
     }
 
     $str .= ", Intervenant : " . $course->teacher;
@@ -212,9 +237,16 @@ function addEvents(Google_Client $client, array $agenda)
 //        $event->setLocation()
 
         $description = "";
-        if (!empty($room)) {
-            $room = Room::fromObject($course->rooms[0]);
-            $description .= "<span>Salle : " . $room->campus . " - " . $room->name . "</span><br>";
+
+ 
+
+        if (!empty($course->rooms)) {
+            $description .= "<span>Salle(s) :<ul>";
+
+            foreach ($course->rooms as $room) {
+                $description .= "<li>" . $room->campus . " - " . $room->name . "</li>";
+            }
+            $description .= "</ul></span>";
         }
         $description .= "<span>Intervenant : " . $course->teacher . "</span>";
         $event->setDescription($description);

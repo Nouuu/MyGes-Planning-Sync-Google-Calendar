@@ -87,7 +87,9 @@ function showAgenda(array $agenda)
             echo trim($room_str, ", ");
         }
 
-        echo ", Intervenant : " . $course->teacher;
+        if (!empty($course->teacher) && strlen($course->teacher) > 1) {
+            echo ", Intervenant : " . $course->teacher;
+        }
 
         printf(PHP_EOL);
     }
@@ -120,8 +122,9 @@ function getCourseResume(Course $course): string
         $str .= trim($room_str, ", ");
     }
 
-    $str .= ", Intervenant : " . $course->teacher;
-
+    if (!empty($course->teacher) && strlen($course->teacher) > 1) {
+        $str .= ", Intervenant : " . $course->teacher;
+    }
     return $str;
 }
 
@@ -238,7 +241,9 @@ function addEvents(Google_Client $client, array $agenda)
 
         $description = "";
 
- 
+        if (!empty($course->teacher) && strlen($course->teacher) > 1) {
+            $description .= "<span>Intervenant : " . $course->teacher . "</span><br>";
+        }
 
         if (!empty($course->rooms)) {
             $description .= "<span>Salle(s) :<ul>";
@@ -248,7 +253,7 @@ function addEvents(Google_Client $client, array $agenda)
             }
             $description .= "</ul></span>";
         }
-        $description .= "<span>Intervenant : " . $course->teacher . "</span>";
+
         $event->setDescription($description);
 
         $start = new Google_Service_Calendar_EventDateTime();

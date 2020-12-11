@@ -186,19 +186,6 @@ function getEvent(Google_Client $client, $days = 7): Google_Service_Calendar_Eve
     );
 
     return $service->events->listEvents(calendar_id, $optParams);
-
-    /*if (empty($events)) {
-        print "No upcoming events found.\n";
-    } else {
-        print "Upcoming events:\n";
-        foreach ($events as $event) {
-            $start = $event->start->dateTime;
-            if (empty($start)) {
-                $start = $event->start->date;
-            }
-            printf("%s - %s - (%s)\n", $event->getSummary(), $event->getDescription(), $start);
-        }
-    }*/
 }
 
 function removeEvents(Google_Client $client, $events)
@@ -208,14 +195,6 @@ function removeEvents(Google_Client $client, $events)
     foreach ($events as $event) {
         $service->events->delete(calendar_id, $event->getId());
     }
-
-    /*    foreach ($events as $event) {
-            $start = $event->start->dateTime;
-            if (empty($start)) {
-                $start = $event->start->date;
-            }
-            printf("%s - %s - (%s)\n", $event->getSummary(), $event->getLocation(), $start);
-        }*/
 }
 
 function getDateTimeForEvent($msTimestamp): string

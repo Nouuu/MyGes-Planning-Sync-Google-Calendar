@@ -37,7 +37,7 @@ function getDateStart(): DateTime
 function getDateEnd(int $days): DateTime
 {
     $end = new DateTime();
-    date_add($end, date_interval_create_from_date_string($days . ' days'));
+    $end->add(date_interval_create_from_date_string($days . ' days'));
     $end->setTime(23, 59, 59);
     return $end;
 }

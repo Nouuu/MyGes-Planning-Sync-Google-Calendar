@@ -11,8 +11,8 @@
   ],
   "require": {
     "tchenu/myges": "dev-master",
-    "google/apiclient": "^2.7",
     "ext-json": "*",
-    "ext-ctype": "*"
+    "ext-ctype": "*",
+    "google/apiclient": "^2.8"
   }
 }

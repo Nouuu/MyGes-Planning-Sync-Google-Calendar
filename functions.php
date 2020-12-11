@@ -22,7 +22,7 @@ function getClient(): Client
     }
 }
 
-function getAgenda(int $days = 7, Me $me): array
+function getAgenda(Me $me, int $days = 7): array
 {
     return $me->getAgenda(getDateStart()->getTimestamp() * 1000, getDateEnd($days)->getTimestamp() * 1000);
 }

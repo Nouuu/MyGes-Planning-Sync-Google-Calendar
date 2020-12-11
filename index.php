@@ -20,7 +20,7 @@ print "Connecté !" . PHP_EOL;
 
 printDivider();
 printf("Récupération des cours sur %d jours..." . PHP_EOL, $days);
-$agenda = getAgenda($days, $me);
+$agenda = getAgenda($me, $days);
 printf("Réussi ! %d cours trouvés" . PHP_EOL, sizeof($agenda));
 
 print "Traitement des doublons..." . PHP_EOL;

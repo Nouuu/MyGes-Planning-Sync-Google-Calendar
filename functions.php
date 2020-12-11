@@ -104,12 +104,12 @@ function getCourseResume(Course $course): string
 
     $start = new DateTime();
     $start->setTimestamp($course->start_date / 1000);
-    $start->add(date_interval_create_from_date_string("2 hours"));
+    $start->add(date_interval_create_from_date_string("1 hours"));
     $str .= ", Debut : " . $start->format("d-m-Y à H:i");
 
     $end = new DateTime();
     $end->setTimestamp($course->end_date / 1000);
-    $end->add(date_interval_create_from_date_string("2 hours"));
+    $end->add(date_interval_create_from_date_string("1 hours"));
     $str .= ", Fin : " . $end->format("d-m-Y à H:i");
 
     if (!empty($course->rooms)) {

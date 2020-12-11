@@ -173,7 +173,7 @@ function getCalendarClient(): Google_Client
     return $client;
 }
 
-function getEvent(Google_Client $client, $days = 7)
+function getEvent(Google_Client $client, $days = 7): Google_Service_Calendar_Events
 {
     $service = new Google_Service_Calendar($client);
 

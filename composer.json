@@ -13,6 +13,6 @@
     "tchenu/myges": "dev-master",
     "ext-json": "*",
     "ext-ctype": "*",
-    "google/apiclient": "^2.8"
+    "google/apiclient": "^v2.8.3"
   }
 }

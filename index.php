@@ -7,14 +7,15 @@ require_once __DIR__ . '/functions.php';
 print("MYGES CALENDAR SYNC (by Nospy)" . PHP_EOL);
 printDivider();
 
-print "Entrez le nombre de jours que vous souhaitez synchroniser à partir d'aujourd'hui : ";
-$days = trim(fgets(STDIN));
-if (!ctype_digit($days)) {
-    die;
+$days = $argv[1];
+
+while (!ctype_digit($days) && $days >= 0) {
+    print "Entrez le nombre de jours que vous souhaitez synchroniser à partir d'aujourd'hui : ";
+    $days = trim(fgets(STDIN));
 }
 
 printDivider();
-print "Connexion à myges..." . PHP_EOL;
+print "Connexion à MyGES..." . PHP_EOL;
 $me = getMe();
 print "Connecté !" . PHP_EOL;
 
@@ -25,7 +26,7 @@ printf("Réussi ! %d cours trouvés" . PHP_EOL, sizeof($agenda));
 
 print "Traitement des doublons..." . PHP_EOL;
 $agenda = removeDuplicate($agenda);
-printf("Réussi : %d cours uniques" . PHP_EOL, sizeof($agenda));
+printf("Réussi ! %d cours uniques" . PHP_EOL, sizeof($agenda));
 
 printDivider();
 print "Connexion à l'API google..." . PHP_EOL;

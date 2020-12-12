@@ -8,6 +8,7 @@ require_once __DIR__ . '/env.php';
 require_once __DIR__ . '/models/Course.php';
 require_once __DIR__ . '/models/Room.php';
 
+
 function getMe(): Me
 {
     return new Me(getClient());
@@ -22,7 +23,7 @@ function getClient(): Client
     }
 }
 
-function getAgenda(int $days = 7, Me $me): array
+function getAgenda(Me $me, int $days = 7): array
 {
     return $me->getAgenda(getDateStart()->getTimestamp() * 1000, getDateEnd($days)->getTimestamp() * 1000);
 }
@@ -37,7 +38,7 @@ function getDateStart(): DateTime
 function getDateEnd(int $days): DateTime
 {
     $end = new DateTime();
-    date_add($end, date_interval_create_from_date_string($days . ' days'));
+    $end->add(date_interval_create_from_date_string($days . ' days'));
     $end->setTime(23, 59, 59);
     return $end;
 }
@@ -104,12 +105,12 @@ function getCourseResume(Course $course): string
 
     $start = new DateTime();
     $start->setTimestamp($course->start_date / 1000);
-    $start->add(date_interval_create_from_date_string("2 hours"));
+    $start->add(date_interval_create_from_date_string("1 hours"));
     $str .= ", Debut : " . $start->format("d-m-Y à H:i");
 
     $end = new DateTime();
     $end->setTimestamp($course->end_date / 1000);
-    $end->add(date_interval_create_from_date_string("2 hours"));
+    $end->add(date_interval_create_from_date_string("1 hours"));
     $str .= ", Fin : " . $end->format("d-m-Y à H:i");
 
     if (!empty($course->rooms)) {
@@ -173,7 +174,7 @@ function getCalendarClient(): Google_Client
     return $client;
 }
 
-function getEvent(Google_Client $client, $days = 7)
+function getEvent(Google_Client $client, $days = 7): Google_Service_Calendar_Events
 {
     $service = new Google_Service_Calendar($client);
 
@@ -186,19 +187,6 @@ function getEvent(Google_Client $client, $days = 7)
     );
 
     return $service->events->listEvents(calendar_id, $optParams);
-
-    /*if (empty($events)) {
-        print "No upcoming events found.\n";
-    } else {
-        print "Upcoming events:\n";
-        foreach ($events as $event) {
-            $start = $event->start->dateTime;
-            if (empty($start)) {
-                $start = $event->start->date;
-            }
-            printf("%s - %s - (%s)\n", $event->getSummary(), $event->getDescription(), $start);
-        }
-    }*/
 }
 
 function removeEvents(Google_Client $client, $events)
@@ -208,14 +196,6 @@ function removeEvents(Google_Client $client, $events)
     foreach ($events as $event) {
         $service->events->delete(calendar_id, $event->getId());
     }
-
-    /*    foreach ($events as $event) {
-            $start = $event->start->dateTime;
-            if (empty($start)) {
-                $start = $event->start->date;
-            }
-            printf("%s - %s - (%s)\n", $event->getSummary(), $event->getLocation(), $start);
-        }*/
 }
 
 function getDateTimeForEvent($msTimestamp): string
@@ -233,39 +213,93 @@ function addEvents(Google_Client $client, array $agenda)
     foreach ($agenda as $course) {
         $course = Course::fromObject($course);
         printf("Ajout du cours :%s%s" . PHP_EOL, PHP_EOL, getCourseResume($course));
-
-        $event = new Google_Service_Calendar_Event();
-        $event->setSummary($course->name);
-        //TODO set location and color
-//        $event->setLocation()
-
-        $description = "";
-
-        if (!empty($course->teacher) && strlen($course->teacher) > 1) {
-            $description .= "<span>Intervenant : " . $course->teacher . "</span><br>";
-        }
-
-        if (!empty($course->rooms)) {
-            $description .= "<span>Salle(s) :<ul>";
-
-            foreach ($course->rooms as $room) {
-                $description .= "<li>" . $room->campus . " - " . $room->name . "</li>";
-            }
-            $description .= "</ul></span>";
-        }
-
-        $event->setDescription($description);
-
-        $start = new Google_Service_Calendar_EventDateTime();
-        $start->setDateTime(getDateTimeForEvent($course->start_date));
-        $event->setStart($start);
-
-        $end = new Google_Service_Calendar_EventDateTime();
-        $end->setDateTime(getDateTimeForEvent($course->end_date));
-        $event->setEnd($end);
+        $event = createGoogleEvent($course);
 
         $service->events->insert($calendarId, $event);
     }
+}
+
+function batchAddEvents(Google_Client $client, array $agenda)
+{
+    $client->setUseBatch(true);
+    $service = new Google_Service_Calendar($client);
+    $batch_client = $service->createBatch();
+    $count = 0;
+    foreach ($agenda as $course) {
+        $course = Course::fromObject($course);
+        printf("Ajout du cours :%s%s" . PHP_EOL, PHP_EOL, getCourseResume($course));
+        $event = createGoogleEvent($course);
+
+        $request = $service->events->insert(calendar_id, $event);
+        $count++;
+        $batch_client->add($request);
+        if ($count >= max_batch_request) {
+            //don't set more than 50
+            $batch_client->execute();
+            $batch_client = $service->createBatch();
+            $count = 0;
+        }
+    }
+    $batch_client->execute();
+    $client->setUseBatch(false);
+}
+
+function batchRemoveEvents(Google_Client $client, Google_Service_Calendar_Events $events)
+{
+    $client->setUseBatch(true);
+    $service = new Google_Service_Calendar($client);
+    $batch_client = $service->createBatch();
+    $count = 0;
+
+    foreach ($events as $event) {
+        $count++;
+        $request = $service->events->delete(calendar_id, $event->getId());
+        $batch_client->add($request);
+
+        if ($count >= max_batch_request) {
+            //don't set more than 50
+            $batch_client->execute();
+            $batch_client = $service->createBatch();
+            $count = 0;
+        }
+
+    }
+    $batch_client->execute();
+    $client->setUseBatch(false);
+}
+
+function createGoogleEvent(Course $course): Google_Service_Calendar_Event
+{
+    $event = new Google_Service_Calendar_Event();
+    $event->setSummary($course->name);
+    //TODO set location and color
+//        $event->setLocation()
+
+    $description = "";
+
+    if (!empty($course->teacher) && strlen($course->teacher) > 1) {
+        $description .= "<span>Intervenant : " . $course->teacher . "</span><br>";
+    }
+
+    if (!empty($course->rooms)) {
+        $description .= "<span>Salle(s) :<ul>";
+
+        foreach ($course->rooms as $room) {
+            $description .= "<li>" . $room->campus . " - " . $room->name . "</li>";
+        }
+        $description .= "</ul></span>";
+    }
+
+    $event->setDescription($description);
+
+    $start = new Google_Service_Calendar_EventDateTime();
+    $start->setDateTime(getDateTimeForEvent($course->start_date));
+    $event->setStart($start);
+
+    $end = new Google_Service_Calendar_EventDateTime();
+    $end->setDateTime(getDateTimeForEvent($course->end_date));
+    $event->setEnd($end);
+    return $event;
 }
 
 function printDivider()

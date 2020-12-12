@@ -8,6 +8,7 @@ require_once __DIR__ . '/env.php';
 require_once __DIR__ . '/models/Course.php';
 require_once __DIR__ . '/models/Room.php';
 
+
 function getMe(): Me
 {
     return new Me(getClient());
@@ -212,86 +213,93 @@ function addEvents(Google_Client $client, array $agenda)
     foreach ($agenda as $course) {
         $course = Course::fromObject($course);
         printf("Ajout du cours :%s%s" . PHP_EOL, PHP_EOL, getCourseResume($course));
-
-        $event = new Google_Service_Calendar_Event();
-        $event->setSummary($course->name);
-        //TODO set location and color
-//        $event->setLocation()
-
-        $description = "";
-
-        if (!empty($course->teacher) && strlen($course->teacher) > 1) {
-            $description .= "<span>Intervenant : " . $course->teacher . "</span><br>";
-        }
-
-        if (!empty($course->rooms)) {
-            $description .= "<span>Salle(s) :<ul>";
-
-            foreach ($course->rooms as $room) {
-                $description .= "<li>" . $room->campus . " - " . $room->name . "</li>";
-            }
-            $description .= "</ul></span>";
-        }
-
-        $event->setDescription($description);
-
-        $start = new Google_Service_Calendar_EventDateTime();
-        $start->setDateTime(getDateTimeForEvent($course->start_date));
-        $event->setStart($start);
-
-        $end = new Google_Service_Calendar_EventDateTime();
-        $end->setDateTime(getDateTimeForEvent($course->end_date));
-        $event->setEnd($end);
+        $event = createGoogleEvent($course);
 
         $service->events->insert($calendarId, $event);
     }
 }
 
-function batchInsert(Google_Client $client, array $agenda)
+function batchAddEvents(Google_Client $client, array $agenda)
 {
     $client->setUseBatch(true);
     $service = new Google_Service_Calendar($client);
     $batch_client = $service->createBatch();
-//don't set more than 50
+    $count = 0;
     foreach ($agenda as $course) {
         $course = Course::fromObject($course);
         printf("Ajout du cours :%s%s" . PHP_EOL, PHP_EOL, getCourseResume($course));
-
-        $event = new Google_Service_Calendar_Event();
-        $event->setSummary($course->name);
-        //TODO set location and color
-//        $event->setLocation()
-
-        $description = "";
-
-        if (!empty($course->teacher) && strlen($course->teacher) > 1) {
-            $description .= "<span>Intervenant : " . $course->teacher . "</span><br>";
-        }
-
-        if (!empty($course->rooms)) {
-            $description .= "<span>Salle(s) :<ul>";
-
-            foreach ($course->rooms as $room) {
-                $description .= "<li>" . $room->campus . " - " . $room->name . "</li>";
-            }
-            $description .= "</ul></span>";
-        }
-
-        $event->setDescription($description);
-
-        $start = new Google_Service_Calendar_EventDateTime();
-        $start->setDateTime(getDateTimeForEvent($course->start_date));
-        $event->setStart($start);
-
-        $end = new Google_Service_Calendar_EventDateTime();
-        $end->setDateTime(getDateTimeForEvent($course->end_date));
-        $event->setEnd($end);
+        $event = createGoogleEvent($course);
 
         $request = $service->events->insert(calendar_id, $event);
-
+        $count++;
         $batch_client->add($request);
+        if ($count >= max_batch_request) {
+            //don't set more than 50
+            $batch_client->execute();
+            $batch_client = $service->createBatch();
+            $count = 0;
+        }
     }
     $batch_client->execute();
+    $client->setUseBatch(false);
+}
+
+function batchRemoveEvents(Google_Client $client, Google_Service_Calendar_Events $events)
+{
+    $client->setUseBatch(true);
+    $service = new Google_Service_Calendar($client);
+    $batch_client = $service->createBatch();
+    $count = 0;
+
+    foreach ($events as $event) {
+        $count++;
+        $request = $service->events->delete(calendar_id, $event->getId());
+        $batch_client->add($request);
+
+        if ($count >= max_batch_request) {
+            //don't set more than 50
+            $batch_client->execute();
+            $batch_client = $service->createBatch();
+            $count = 0;
+        }
+
+    }
+    $batch_client->execute();
+    $client->setUseBatch(false);
+}
+
+function createGoogleEvent(Course $course): Google_Service_Calendar_Event
+{
+    $event = new Google_Service_Calendar_Event();
+    $event->setSummary($course->name);
+    //TODO set location and color
+//        $event->setLocation()
+
+    $description = "";
+
+    if (!empty($course->teacher) && strlen($course->teacher) > 1) {
+        $description .= "<span>Intervenant : " . $course->teacher . "</span><br>";
+    }
+
+    if (!empty($course->rooms)) {
+        $description .= "<span>Salle(s) :<ul>";
+
+        foreach ($course->rooms as $room) {
+            $description .= "<li>" . $room->campus . " - " . $room->name . "</li>";
+        }
+        $description .= "</ul></span>";
+    }
+
+    $event->setDescription($description);
+
+    $start = new Google_Service_Calendar_EventDateTime();
+    $start->setDateTime(getDateTimeForEvent($course->start_date));
+    $event->setStart($start);
+
+    $end = new Google_Service_Calendar_EventDateTime();
+    $end->setDateTime(getDateTimeForEvent($course->end_date));
+    $event->setEnd($end);
+    return $event;
 }
 
 function printDivider()

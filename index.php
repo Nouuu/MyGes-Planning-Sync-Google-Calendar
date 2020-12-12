@@ -39,12 +39,12 @@ printf("Réussi ! %d cours trouvés" . PHP_EOL, sizeof($events));
 
 printDivider();
 print "Nettoyage des cours sur le calendrier google..." . PHP_EOL;
-removeEvents($client, $events);
+batchRemoveEvents($client, $events);
 print "Les cours ont été supprimés de l'agenda google!" . PHP_EOL;
 
 printDivider();
 print "Ajout des cours sur le calendrier google..." . PHP_EOL;
-addEvents($client, $agenda);
+batchAddEvents($client, $agenda);
 printDivider();
 print "Les cours ont été ajoutés!" . PHP_EOL;
 

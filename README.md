@@ -20,11 +20,13 @@ Version php utilisé : 7.4
     * `calendar_api_application_name` [Nom de l'API google calendar](#api-google)
     * `calendar_api_auth_config_file` [Nom du fichiers d'authentification à l'API google calendar.](#api-google)
     * `calendar_id`[ Id du calendrier google](#calendrier-google) (ex: vf2kq9ary690m8iee8ahv3e3d0@group.calendar.google.com)
-
+    * `max_batch_request` Nombre maximum d'évènement dans une seule requête pour l'api (ne pas depasser 50 !)
 ## Lancement
-Une fois le fichier `env.php` rempli, lancez (avec linux ou phpstorm de préférence, **evitez git bash !**) la commande : `php index.php`.
+Une fois le fichier `env.php` rempli, lancez (avec linux ou phpstorm de préférence, **evitez git bash !**) la commande : `php run.php`.
 
-Le programme vous demandera le nombre de jours à synchroniser à partir d'aujourd'hui. 
+Le programme vous demandera le nombre de jours à synchroniser à partir d'aujourd'hui.
+
+Vous pouvez également indiquer le nombre de jours voulu directement depuis la ligne de commande de cette manière : `php run.php 7`
 
 ![image](https://i.imgur.com/qojtmG6.png)
 

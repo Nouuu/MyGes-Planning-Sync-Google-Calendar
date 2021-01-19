@@ -38,15 +38,19 @@ printf("Récupération de la liste des cours présent sur le calendrier google s
 $events = getEvent($client, $days);
 printf("Réussi ! %d cours trouvés" . PHP_EOL, sizeof($events));
 
-printDivider();
-print "Nettoyage des cours sur le calendrier google..." . PHP_EOL;
-batchRemoveEvents($client, $events);
-print "Les cours ont été supprimés de l'agenda google!" . PHP_EOL;
+if (sizeof($events) > 0) {
+    printDivider();
+    print "Nettoyage des cours sur le calendrier google..." . PHP_EOL;
+    batchRemoveEvents($client, $events);
+    print "Les cours ont été supprimés de l'agenda google!" . PHP_EOL;
+}
 
-printDivider();
-print "Ajout des cours sur le calendrier google..." . PHP_EOL;
-batchAddEvents($client, $agenda);
-printDivider();
-print "Les cours ont été ajoutés!" . PHP_EOL;
+if (sizeof($agenda) > 0) {
+    printDivider();
+    print "Ajout des cours sur le calendrier google..." . PHP_EOL;
+    batchAddEvents($client, $agenda);
+    printDivider();
+    print "Les cours ont été ajoutés!" . PHP_EOL;
+}
 
 print "Finit." . PHP_EOL;

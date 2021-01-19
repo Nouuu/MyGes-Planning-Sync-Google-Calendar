@@ -221,51 +221,55 @@ function addEvents(Google_Client $client, array $agenda)
 
 function batchAddEvents(Google_Client $client, array $agenda)
 {
-    $client->setUseBatch(true);
-    $service = new Google_Service_Calendar($client);
-    $batch_client = $service->createBatch();
-    $count = 0;
-    foreach ($agenda as $course) {
-        $course = Course::fromObject($course);
-        printf("Ajout du cours :%s%s" . PHP_EOL, PHP_EOL, getCourseResume($course));
-        $event = createGoogleEvent($course);
+    if (sizeof($agenda) > 0) {
+        $client->setUseBatch(true);
+        $service = new Google_Service_Calendar($client);
+        $batch_client = $service->createBatch();
+        $count = 0;
+        foreach ($agenda as $course) {
+            $course = Course::fromObject($course);
+            printf("Ajout du cours :%s%s" . PHP_EOL, PHP_EOL, getCourseResume($course));
+            $event = createGoogleEvent($course);
 
-        $request = $service->events->insert(calendar_id, $event);
-        $count++;
-        $batch_client->add($request);
-        if ($count >= max_batch_request) {
-            //don't set more than 50
-            $batch_client->execute();
-            $batch_client = $service->createBatch();
-            $count = 0;
+            $request = $service->events->insert(calendar_id, $event);
+            $count++;
+            $batch_client->add($request);
+            if ($count >= max_batch_request) {
+                //don't set more than 50
+                $batch_client->execute();
+                $batch_client = $service->createBatch();
+                $count = 0;
+            }
         }
+        $batch_client->execute();
+        $client->setUseBatch(false);
     }
-    $batch_client->execute();
-    $client->setUseBatch(false);
 }
 
 function batchRemoveEvents(Google_Client $client, Google_Service_Calendar_Events $events)
 {
-    $client->setUseBatch(true);
-    $service = new Google_Service_Calendar($client);
-    $batch_client = $service->createBatch();
-    $count = 0;
+    if (sizeof($events) > 0) {
+        $client->setUseBatch(true);
+        $service = new Google_Service_Calendar($client);
+        $batch_client = $service->createBatch();
+        $count = 0;
 
-    foreach ($events as $event) {
-        $count++;
-        $request = $service->events->delete(calendar_id, $event->getId());
-        $batch_client->add($request);
+        foreach ($events as $event) {
+            $count++;
+            $request = $service->events->delete(calendar_id, $event->getId());
+            $batch_client->add($request);
 
-        if ($count >= max_batch_request) {
-            //don't set more than 50
-            $batch_client->execute();
-            $batch_client = $service->createBatch();
-            $count = 0;
+            if ($count >= max_batch_request) {
+                //don't set more than 50
+                $batch_client->execute();
+                $batch_client = $service->createBatch();
+                $count = 0;
+            }
+
         }
-
+        $batch_client->execute();
+        $client->setUseBatch(false);
     }
-    $batch_client->execute();
-    $client->setUseBatch(false);
 }
 
 function createGoogleEvent(Course $course): Google_Service_Calendar_Event

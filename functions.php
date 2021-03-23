@@ -286,12 +286,15 @@ function createGoogleEvent(Course $course): Google_Service_Calendar_Event
     }
 
     if (!empty($course->rooms)) {
+//        $event->setColorId(10);
         $description .= "<span>Salle(s) :<ul>";
 
         foreach ($course->rooms as $room) {
             $description .= "<li>" . $room->campus . " - " . $room->name . "</li>";
         }
         $description .= "</ul></span>";
+    }else{
+        $event->setColorId(11);
     }
 
     $event->setDescription($description);

@@ -2,6 +2,8 @@
 
 Ce script permet de récupérer votre planning présent sur myges et de le synchroniser à un calendrier google.
 
+> ⚠️ Un problème est présent actuellement sur ce projet [ticket](https://github.com/Nouuu/MyGes-Planning-Sync-Google-Calendar/issues/10)
+
 ## Installation :
 
 Version php utilisé : 7.4

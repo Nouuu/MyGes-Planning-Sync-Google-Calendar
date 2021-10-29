@@ -1,8 +1,8 @@
 # MyGes Planning Sync Google Calendar
 
-Ce script permet de récupérer votre planning présent sur myges et de le synchroniser à un calendrier google.
+> ⚠️ LE PROJET N'EST PLUS MAINTENU. Cette fonctionnalité sera intégrée et maintenu au sein de cet autre projet désormais : [myges-cli](https://github.com/quantumsheep/myges-cli)
 
-> ⚠️ Un problème est présent actuellement sur ce projet [ticket](https://github.com/Nouuu/MyGes-Planning-Sync-Google-Calendar/issues/10)
+Ce script permet de récupérer votre planning présent sur myges et de le synchroniser à un calendrier google.
 
 ## Installation :
 
